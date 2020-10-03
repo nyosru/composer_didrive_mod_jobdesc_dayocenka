@@ -56,7 +56,7 @@ try {
     $actions = \Nyos\mod\JobDesc::getActionsJobmansOnMonth($db, array_keys($jobmans['data']['jobmans']), $return['date'], true, $return['sp']);
     // \f\pa($actions, 2, '', '$actions');
 // считаем сколько часов отработано
-    $hours = \Nyos\mod\JobDesc::calcHoursDaysForOcenka($db, $return['date'], $return['sp'], array_keys($jobmans['data']['jobmans']), $actions['data']['actions']);
+    $hours = \Nyos\mod\JOBDESC_DAYOCENKA::calcHoursDaysForOcenka($db, $return['date'], $return['sp'], array_keys($jobmans['data']['jobmans']), $actions['data']['actions']);
     // \f\pa($hours, 2, '', 'колво hours');
     $return['hour_day'] = $return['hours'] = $hours['hours'];
     $return['checks'] = $hours['calc_checks'];
@@ -79,8 +79,8 @@ try {
                     'cold' => $v['cold'] ?? '',
                     'delivery' => $v['delivery'] ?? '',
                 ];
-                $return['time_cold'] = $v['cold'] ?? '';
-                $return['time_delivery'] = $v['delivery'] ?? '';
+                $return['cold'] = $v['cold'] ?? '';
+                $return['delivery'] = $v['delivery'] ?? '';
             }
         }
     }
@@ -89,7 +89,10 @@ try {
     $return['smen_in_day'] = round($return['hours'] / $return['norms']['kolvo_hour_in1smena'], 1);
 
     // считаем выручку в 1 руки
+    $return['vuruchka_on_1_hand'] = 
     $return['summa_na_ruki'] = ceil($return['oborot'] / $return['smen_in_day']);
+    
+    //$return['vuruchka'] = $return['oborot'];
 
     $return['summa_zp_if5'] = $hours['summa_if5'] ?? '';
 
@@ -116,6 +119,7 @@ try {
             . ' <nobr>(норматив ' . $return['norms']['time_wait_norm_cold'] . '/' . $return['norms']['time_wait_norm_delivery'] . ')</nobr> '
             . '<Br/>оценка: ' . $return['ocenka_time'] . '<Br/>';
 
+    $return['procent_oplata_truda_on_oborota'] =
     $return['proc_zp_ot_oborota_if5'] = $return['if5_proc_oborot'] = round($hours['summa_if5'] / ($return['oborot'] / 100), 1);
 
     if ($return['if5_proc_oborot'] < $return['norms']['procent_oplata_truda_on_oborota']) {
