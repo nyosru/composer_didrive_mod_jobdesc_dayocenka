@@ -16,7 +16,7 @@ if (isset($skip_start) && $skip_start === true) {
 try {
 
     if (
-        !empty($_REQUEST['sp']) && !empty($_REQUEST['date']) && !empty($_REQUEST['s']) && \Nyos\Nyos::checkSecret($_REQUEST['s'], $_REQUEST['sp'] . $_REQUEST['date']) !== false
+            !empty($_REQUEST['sp']) && !empty($_REQUEST['date']) && !empty($_REQUEST['s']) && \Nyos\Nyos::checkSecret($_REQUEST['s'], $_REQUEST['sp'] . $_REQUEST['date']) !== false
     ) {
         
     } else {
@@ -61,7 +61,6 @@ try {
     $actions = \Nyos\mod\JobDesc::getActionsJobmansOnMonth($db, array_keys($jobmans['data']['jobmans']), $return['date'], true, $return['sp']);
     // $actions = [];
     //\f\pa($actions, 2, '', '$actions');
-
 //    foreach ($actions['data']['actions'] as $k => $v) {
 //        if ($v['type'] == 'check')
 //            \f\pa($v, 2, '', 'check');
@@ -69,11 +68,8 @@ try {
 // считаем сколько часов отработано
     $hours = \Nyos\mod\JOBDESC_DAYOCENKA::calcHoursDaysForOcenka($db, $return['date'], $return['sp'], array_keys($jobmans['data']['jobmans']), $actions['data']['actions']);
     // $hours = [];
-    \f\pa($hours, 2, '', 'колво hours');
-    
+    //\f\pa($hours, 2, '', 'колво hours');
 // proc_zp_ot_oborota_if5
-
-
 // часы что в фот
     $return['hour_day'] = $return['hours'] = $hours['hours'];
 // общее число часов
@@ -82,9 +78,9 @@ try {
     $return['checks'] = $hours['calc_checks'];
 
     foreach ($actions['data']['actions'] as $k => $v) {
-        
+
         if (isset($v['date']) && $v['date'] == $return['date']) {
-            
+
             if (isset($v['type']) && $v['type'] == 'oborot') {
                 $return['oborot'] = $v['oborot_day'];
             } elseif (isset($v['type']) && $v['type'] == 'norms') {
@@ -104,9 +100,7 @@ try {
                 $return['cold'] = $v['cold'] ?? '';
                 $return['delivery'] = $v['delivery'] ?? '';
             }
-            
         }
-        
     }
 
 // считаем норму на 1 руки
@@ -129,7 +123,7 @@ try {
             . '<Br/>посчитали сколько отработано смен <nobr>' . $return['hours'] . '/' . $return['norms']['kolvo_hour_in1smena'] . ' = ' . $return['smen_in_day'] . '</nobr>'
             . '<Br/>часть оборота на 1 руки ' . $return['summa_na_ruki']
             . ' (норматив ' . $return['norms']['vuruchka_on_1_hand'] . ') '
-            . '<Br/>оценка: ' . $return['ocenka_naruki'] . '<Br/>';
+            . '<div style="background-color: rgba(' . ( $return['ocenka_naruki'] == 5 ? '0,255,0' : '255,255,0' ) . ',0.3);" >оценка: ' . $return['ocenka_naruki'] . '</div>';
 
     if ($return['timeo']['cold'] <= $return['norms']['time_wait_norm_cold'] && $return['timeo']['delivery'] <= $return['norms']['time_wait_norm_delivery']) {
         $return['ocenka_time'] = 5;
@@ -141,12 +135,12 @@ try {
             . '<Br/>'
             . $return['timeo']['cold'] . '/' . $return['timeo']['delivery']
             . ' <nobr>(норматив ' . $return['norms']['time_wait_norm_cold'] . '/' . $return['norms']['time_wait_norm_delivery'] . ')</nobr> '
-            . '<Br/>оценка: ' . $return['ocenka_time'] . '<Br/>';
+            . '<div style="background-color: rgba(' . ( $return['ocenka_time'] == 5 ? '0,255,0' : '255,255,0' ) . ',0.3);" >оценка: ' . $return['ocenka_time'] . '</div>';
 
     // $return['procent_oplata_truda_on_oborota'] = $return['proc_zp_ot_oborota_if5'] = $return['if5_proc_oborot'] = round($hours['summa_if5'] / ($return['oborot'] / 100), 1);
     $return['proc_zp_ot_oborota_if5'] = round($hours['summa_if5'] / ($return['oborot'] / 100), 1);
 
-    if ( $return['proc_zp_ot_oborota_if5'] < $return['norms']['procent_oplata_truda_on_oborota']) {
+    if ($return['proc_zp_ot_oborota_if5'] < $return['norms']['procent_oplata_truda_on_oborota']) {
         $return['ocenka_proc_ot_oborot'] = 5;
     } else {
         $return['ocenka'] = $return['ocenka_proc_ot_oborot'] = 3;
@@ -156,11 +150,11 @@ try {
             . '<Br/>текущее значение ' . $return['proc_zp_ot_oborota_if5']
             . ' <nobr>(на зп ' . $hours['summa_if5'] . ' из ТО ' . $return['oborot'] . ')</nobr> '
             . '<Br/><nobr>норматив ' . $return['norms']['procent_oplata_truda_on_oborota'] . '</nobr> '
-            . '<Br/>оценка: ' . $return['ocenka_proc_ot_oborot']
+            . '<div style="background-color: rgba(' . ( $return['ocenka_proc_ot_oborot'] == 5 ? '0,255,0' : '255,255,0' ) . ',0.3);" >оценка: ' . $return['ocenka_proc_ot_oborot'] . '</div>'
     ;
 
-    $return['txt'] .= '<div style="background-color:yellow; padding:2px 5px; text-align:center;"><nobr><b>Новая итоговая оценка: ' . $return['ocenka'] . '</b></nobr></div>'
-            . 'обновите страницу для обновиления оценки смен в графике';
+    $txt_ocenka = '<div style="background-color: rgba(' . ( $return['ocenka'] == 5 ? '0,255,0' : '255,255,0' ) . ',0.8); padding:2px 5px; text-align:center;"><nobr><b>Новая итоговая оценка: ' . $return['ocenka'] . '</b></nobr></div>';
+    $return['txt'] .= '<br/><br/><font style="color:gray;" >обновите страницу для обновиления оценки смен в графике</font>';
 
 // \f\pa($return);
 
@@ -170,7 +164,7 @@ try {
     $return2 = $return;
     unset($return2['txt']);
 
-    \f\pa($return2, 12, '', '$return2');
+    // \f\pa($return2, 12, '', '$return2');
     $e = \Nyos\mod\items::add($db, 'sp_ocenki_job_day', $return2);
 // \f\pa($e);
 
@@ -189,8 +183,8 @@ try {
     $r = ob_get_contents();
     ob_end_clean();
 
-    \f\end2($r . $return['txt'], true, $return);
-} 
+    \f\end2($txt_ocenka . $r . $return['txt'], true, $return);
+}
 //
 catch (\Exception $ex) {
 
