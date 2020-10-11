@@ -139,6 +139,52 @@ class JOBDESC_DAYOCENKA {
         return $return;
     }
 
+    /**
+     * проверяем есть ли вся инфа чтобы выставить оценку ( нормы дня, время ожидания и обороты )
+     * @param type $db
+     * @param type $sp
+     * @param type $date
+     */
+    public static function checkInfoForOcenka( $db, $sp, $date ) {
+        
+        $sql = 'SELECT mob.id 
+            
+            FROM 
+                mod_sale_point_oborot mob 
+                
+            INNER JOIN mod_sale_point_parametr mp ON 
+                mp.sale_point = mob.sale_point
+                AND mp.date = mob.date
+                AND mp.status = \'show\' 
+                
+            INNER JOIN mod_074_time_expectations_list mt ON 
+                mt.sale_point = mob.sale_point
+                AND mt.date = mob.date
+                AND mt.status = \'show\' 
+                
+            WHERE 
+                mob.sale_point = :sp 
+                AND mob.date = :d 
+                AND mob.status = \'show\' 
+                
+            LIMIT 1            
+            ;';
+        
+// \f\pa($sql);
+        $ff = $db->prepare($sql);
+// \f\pa($var_in);
+        
+        $var_in = [
+            ':sp' => (int) $sp,
+            ':d' => date('Y-m-d',strtotime($date) )
+        ];
+        
+        $ff->execute($var_in);
+
+        return ( $ff->rowCount() == 1 ) ? true : false;
+        
+    }
+    
     public static function calcDaySumma(array $v, $hours, int $sp) {
 
         $r = 0;
@@ -205,6 +251,18 @@ class JOBDESC_DAYOCENKA {
         }
 
         return false;
+    }
+
+    /**
+     * удаляем оценки дня по датам с указанием точки продаж
+     * @param type $db
+     * @param type $sp
+     * @param type $datas
+     */
+    public static function deleteOcenka($db, $sp, $datas = '' ) {
+        
+        \Nyos\mod\items::deleteItemForDops($db, \Nyos\mod\JobDesc::$mod_ocenki_days, [ 'sale_point' => $sp, 'date' => $datas ] );
+        
     }
 
 }
