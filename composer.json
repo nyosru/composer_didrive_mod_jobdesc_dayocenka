@@ -2,7 +2,7 @@
     "name": "didrive_mod/jobdesc_dayocenka",
     "description": "jobdesc автооценка",
 
-    "version": "1.5.0",
+    "version": "1.5.1",
 
     "keywords": [
         "didrive", "module", "nyos", "uralweb.info"
@@ -25,7 +25,7 @@
         ,
         "didrive_mod/jobdesc": ">=0.0.1"
     },
-    
+
     "autoload": {
         "files": [  "src/class.php" ]
     }

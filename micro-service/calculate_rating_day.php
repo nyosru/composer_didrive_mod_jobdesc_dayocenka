@@ -10,7 +10,6 @@ if (isset($skip_start) && $skip_start === true) {
     $skip_start = false;
 }
 
-
 // \f\pa($_REQUEST);
 
 try {
@@ -22,7 +21,6 @@ try {
     } else {
         \f\end2('хьюстон что то пошло не так (обновите страницу и повторите) #' . __LINE__, false);
     }
-
 
     $return = array(
         'txt' => '',
