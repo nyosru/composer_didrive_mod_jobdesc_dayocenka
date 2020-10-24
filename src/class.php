@@ -145,8 +145,8 @@ class JOBDESC_DAYOCENKA {
      * @param type $sp
      * @param type $date
      */
-    public static function checkInfoForOcenka( $db, $sp, $date ) {
-        
+    public static function checkInfoForOcenka($db, $sp, $date) {
+
         $sql = 'SELECT mob.id 
             
             FROM 
@@ -169,22 +169,21 @@ class JOBDESC_DAYOCENKA {
                 
             LIMIT 1            
             ;';
-        
+
 // \f\pa($sql);
         $ff = $db->prepare($sql);
 // \f\pa($var_in);
-        
+
         $var_in = [
             ':sp' => (int) $sp,
-            ':d' => date('Y-m-d',strtotime($date) )
+            ':d' => date('Y-m-d', strtotime($date))
         ];
-        
+
         $ff->execute($var_in);
 
         return ( $ff->rowCount() == 1 ) ? true : false;
-        
     }
-    
+
     public static function calcDaySumma(array $v, $hours, int $sp) {
 
         $r = 0;
@@ -259,10 +258,34 @@ class JOBDESC_DAYOCENKA {
      * @param type $sp
      * @param type $datas
      */
-    public static function deleteOcenka($db, $sp, $datas = '' ) {
-        
-        \Nyos\mod\items::deleteItemForDops($db, \Nyos\mod\JobDesc::$mod_ocenki_days, [ 'sale_point' => $sp, 'date' => $datas ] );
-        
+    public static function deleteOcenka($db, $sp, $datas = '') {
+
+        \Nyos\mod\items::deleteItemForDops($db, \Nyos\mod\JobDesc::$mod_ocenki_days, ['sale_point' => $sp, 'date' => $datas]);
+    }
+
+    public static function deleteOcenki($db, int $sp, $date_start = null) {
+
+        $in = [
+            ':sp' => $sp
+        ];
+
+        if (empty($date_start)) {
+            $in[':date'] = date('Y-m-d', $_SERVER['REQUEST_TIME'] - 3600 * 24);
+        } else {
+            $in[':date'] = date('Y-m-d', strtotime($date_start) );
+        }
+
+        // \Nyos\mod\items::deleteItemForDops($db, \Nyos\mod\JobDesc::$mod_ocenki_days, [ 'sale_point' => $sp, 'date' => $datas ] );
+
+        // $sql = 'UPDATE `mod_' . \f\translit(\Nyos\mod\JobDesc::$mod_ocenki_days, 'uri2') . '` SET `status` = \'delete\' '
+        $sql = 'DELETE FROM `mod_' . \f\translit(\Nyos\mod\JobDesc::$mod_ocenki_days, 'uri2') . '` '
+                . ' WHERE '
+                . ' `sale_point` = :sp '
+                . ' AND `date` >= :date ;';
+// \f\pa($sql);
+        $ff = $db->prepare($sql);
+// \f\pa($var_in);
+        $ff->execute($in);
     }
 
 }
