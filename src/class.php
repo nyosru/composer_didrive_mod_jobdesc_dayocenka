@@ -101,16 +101,18 @@ class JOBDESC_DAYOCENKA {
 
                 if ($now_sp == $sp) {
 
-                    if (self::$show === true)
+                    if (self::$show === true) {
                         echo '<div style="border: 2px solid green; padding: 10px;" >';
-                    if (self::$show === true)
                         echo '<br/>считаем смену';
-                    if (self::$show === true)
                         \f\pa([$now_sp, $now_d, $now_calc, $v], 2);
+                    }
 
                     $return['hours_all'] += $v['hour_on_job'];
 
-                    $return['hours'] += $v['hour_on_job'];
+                    // \f\pa( [ $now_calc , $v ] );
+                    // эта смена входит в ФОТ или не входит // $now_calc == null || 'da'
+                    if (!empty($now_calc))
+                        $return['hours'] += $v['hour_on_job'];
 
                     if (self::$show === true)
                         echo '<br/>' . $v['id'];
@@ -120,15 +122,15 @@ class JOBDESC_DAYOCENKA {
                     if (2 == 1 or self::$show === true)
                         echo '<br/>rr1 ' . $v['id'] . ' ' . $r;
 
-                    $return['summa_if5'] += $r;
+                    if (!empty($now_calc)) {
+                        $return['summa_if5'] += $r;
+                        $return['calc_checks'][] = $v['id'];
+                    }
 
-                    $return['calc_checks'][] = $v['id'];
-
-                    if (self::$show === true)
+                    if (self::$show === true) {
                         \f\pa($return['summa_if5'], 2, '', 'summa_if5');
-
-                    if (self::$show === true)
                         echo '</div>';
+                    }
                 } else {
                     if (self::$show === true)
                         echo '<br/>пропускаем смену';
@@ -218,13 +220,75 @@ class JOBDESC_DAYOCENKA {
 
         try {
 
-            $s2 = $db->prepare('SELECT `sale_point`, `date` FROM `mod_' . \f\translit(\Nyos\mod\JobDesc::$mod_ocenki_days, 'uri2') . '` WHERE `status` = \'show\' AND `date` >= :date ;');
+            $s2 = $db->prepare('
+                ( SELECT 
+                `sale_point`, 
+                `date` ,
+                \'ocenka\' type
+                FROM `mod_' . \f\translit(\Nyos\mod\JobDesc::$mod_ocenki_days, 'uri2') . '` 
+                    WHERE 
+                    `status` = \'show\' 
+                    AND `date` >= :date 
+                )
+                UNION ALL
+                ( SELECT 
+                `sale_point`, 
+                `date` ,
+                \'norm\' type
+                FROM 
+                `mod_' . \f\translit(\Nyos\mod\JobDesc::$mod_norms_day, 'uri2') . '` 
+                    WHERE 
+                    `status` = \'show\' 
+                    AND `date` >= :date 
+                )
+                UNION ALL
+                ( SELECT 
+                `sale_point`, 
+                `date` ,
+                \'timeo\' type
+                FROM 
+                `mod_' . \f\translit(\Nyos\mod\JobDesc::$mod_timeo, 'uri2') . '` 
+                    WHERE 
+                    `status` = \'show\' 
+                    AND `date` >= :date 
+                )
+                UNION ALL
+                ( SELECT 
+                `sale_point`, 
+                `date` ,
+                \'oborot\' type
+                FROM 
+                `mod_' . \f\translit(\Nyos\mod\JobDesc::$mod_oborots, 'uri2') . '` 
+                    WHERE 
+                    `status` = \'show\' 
+                    AND `date` >= :date 
+                )
+                ;');
+
             $date = date('Y-m-d', $_SERVER['REQUEST_TIME'] - 3600 * 24 * $scan_day);
             $s2->execute([':date' => $date]);
 
             while ($r = $s2->fetch()) {
-                $return_sp_date[$r['sale_point']][$r['date']] = 1;
+
+                if (empty($return_sp_date[$r['sale_point']][$r['date']]))
+                    $return_sp_date[$r['sale_point']][$r['date']] = 0;
+
+                if ($r['type'] == 'oborot')
+                    $return_sp_date[$r['sale_point']][$r['date']] += 1;
+
+                if ($r['type'] == 'timeo')
+                    $return_sp_date[$r['sale_point']][$r['date']] += 10;
+
+                if ($r['type'] == 'norm')
+                    $return_sp_date[$r['sale_point']][$r['date']] += 100;
+
+                if ($r['type'] == 'ocenka')
+                    $return_sp_date[$r['sale_point']][$r['date']] += 1000;
+
+                // \f\pa($r);
             }
+
+            // \f\pa($return_sp_date,2,'','$return_sp_date');
 
             $return_date_sp = [];
             $ndate = '';
@@ -235,7 +299,7 @@ class JOBDESC_DAYOCENKA {
 
                 foreach ($sps as $sp => $v) {
 
-                    if (!isset($return_sp_date[$sp][$ndate])) {
+                    if ( isset($return_sp_date[$sp][$ndate]) && $return_sp_date[$sp][$ndate] == 111 ) {
 
                         $return_date_sp[$ndate][$sp] = 1;
                     }
@@ -272,11 +336,10 @@ class JOBDESC_DAYOCENKA {
         if (empty($date_start)) {
             $in[':date'] = date('Y-m-d', $_SERVER['REQUEST_TIME'] - 3600 * 24);
         } else {
-            $in[':date'] = date('Y-m-d', strtotime($date_start) );
+            $in[':date'] = date('Y-m-d', strtotime($date_start));
         }
 
         // \Nyos\mod\items::deleteItemForDops($db, \Nyos\mod\JobDesc::$mod_ocenki_days, [ 'sale_point' => $sp, 'date' => $datas ] );
-
         // $sql = 'UPDATE `mod_' . \f\translit(\Nyos\mod\JobDesc::$mod_ocenki_days, 'uri2') . '` SET `status` = \'delete\' '
         $sql = 'DELETE FROM `mod_' . \f\translit(\Nyos\mod\JobDesc::$mod_ocenki_days, 'uri2') . '` '
                 . ' WHERE '

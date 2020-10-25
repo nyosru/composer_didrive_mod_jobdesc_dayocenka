@@ -81,7 +81,7 @@ try {
 // считаем сколько часов отработано
         $hours = \Nyos\mod\JOBDESC_DAYOCENKA::calcHoursDaysForOcenka($db, $return['date'], $return['sp'], array_keys($jobmans['data']['jobmans']), $actions['data']['actions']);
         // $hours = [];
-        //\f\pa($hours, 2, '', 'колво hours');
+        // \f\pa($hours, 2, '', 'колво hours');
 // proc_zp_ot_oborota_if5
 // часы что в фот
         $return['hour_day'] = $return['hours'] = $hours['hours'];

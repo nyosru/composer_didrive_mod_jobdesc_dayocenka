@@ -17,40 +17,43 @@ if (isset($skip_start) && $skip_start === true) {
 $sec_stop = $_REQUEST['sec'] ?? 20;
 
 // сколько дней сканим (не больше 60)
-$scan_day = $_REQUEST['day'] ?? 60;
+$scan_day = $_REQUEST['day'] ?? 32;
 
-if( $scan_day > 60 ) 
-$scan_day = 60;
+if ($scan_day > 60)
+    $scan_day = 60;
 
 try {
 
-    $ar_date_sp = \Nyos\mod\JOBDESC_DAYOCENKA::whereBlankOcenka($db );
-    // \f\pa($ar_date_sp);
+    $ar_date_sp = \Nyos\mod\JOBDESC_DAYOCENKA::whereBlankOcenka($db);
+    // \f\pa($ar_date_sp, 2, '', '$ar_date_sp');
 
     $nn = 0;
 
+    $runned = [];
+    
     \f\timer_start(12);
 
-    foreach ($ar_date_sp as $d => $v) {
+    foreach ($ar_date_sp as $date => $v) {
 
-        echo '<br/>' . $d;
+        echo '<br/>' . $date;
 
-        foreach ($v as $sp => $v1) {
+        foreach ($v as $sp => $index) {
 
-            $var_cash = 'auto_oc_day_'.$d.$sp;
-            
+//            if( $index !== 111 )
+//                continue;
+
+            $var_cash = 'auto_oc_day_' . $sp . $date;
             $cc = \f\Cash::getVar($var_cash);
-            
-            if( !empty($cc) )
+
+            if (!empty($cc))
                 continue;
-            
-            // echo ' ' . $sp;
+
 
             $u = [
                 // 'action' => 'bonus_record_month',
-                'date' => $d,
+                'date' => $date,
                 'sp' => $sp,
-                's' => \Nyos\Nyos::creatSecret($sp . $d)
+                's' => \Nyos\Nyos::creatSecret($sp . $date)
             ];
             $link = 'http://' . $_SERVER['HTTP_HOST'] . '/vendor/didrive_mod/jobdesc_dayocenka/micro-service/calculate_rating_day.php?' . http_build_query($u);
 
@@ -65,15 +68,36 @@ try {
                 curl_setopt($curl, CURLOPT_HEADER, 0);
                 $result = curl_exec($curl); //выполнение запроса
                 // \f\pa($result, '', '', 'result');
+                // \f\pa( json_decode($result) , 2, '', 'result');
+                // \f\pa(json_decode($result), 2, '', 'result');
                 curl_close($curl); //закрытие сеанса
                 // \f\Cash::setVar($temp_var, 1, ( $time_expire ?? 60 * 60 * 5 ) );
             }
 
-            \f\Cash::setVar($var_cash,11,3600);
+            $runned[$sp][$date] = 1;
             
+            if (1 == 2) {
+                // echo '<br/> ' . $sp . ' ' . $date;
+                try {
+
+                    $res = json_decode($result, true);
+
+                    if (!empty($res['ocenka']))
+                        echo ' оценка ' . $res['ocenka'];
+                }
+                //
+                catch (\Exception $ex) {
+
+                    echo ' ошибка ' . $ex->getMessage();
+                }
+            }
+
+
+            \f\Cash::setVar($var_cash, 11, 3600 + 600);
+
             $m = \f\timer_stop(12, 'ar');
 
-            if ( empty($m) || $m['sec'] > $sec_stop )
+            if (empty($m) || $m['sec'] > $sec_stop)
                 break;
 
             // \f\pa(\f\timer_stop(12, 'ar'));
@@ -84,23 +108,26 @@ try {
             $nn++;
         }
 
-        if ( empty($m) || $m['sec'] > $sec_stop )
+        if (empty($m) || $m['sec'] > $sec_stop)
             break;
 
         $nn++;
     }
-    
 } catch (\Exception $ex) {
     
 }
 
 // \f\pa($m);
 
-\nyos\Msg::sendTelegramm('считаем автооценки которых нет: обработано ' . $nn 
-        . ( !empty( $m ) ? ' ( ' . round($m['sec'], 2) . ' сек ' . round($m['memory'], 2) . ' Кб )' : '' ), null, 2);
+\nyos\Msg::sendTelegramm('считаем автооценки которых нет: обработано ' . $nn
+        . (!empty($m) ? ' ( ' . round($m['sec'], 2) . ' сек ' . round($m['memory'], 2) . ' Кб )' : '' ), null, 2);
 
-die();
-
+// die();
+\f\end2(
+        'считаем автооценки которых нет: обработано ' . $nn
+        . (!empty($m) ? ' ( ' . round($m['sec'], 2) . ' сек ' . round($m['memory'], 2) . ' Кб )' : '' )
+        , true, [ 'timer' => ( $m ?? [] ), 'runned' => $runned ]
+);
 
 
 //
