@@ -10,7 +10,45 @@ if (isset($skip_start) && $skip_start === true) {
     $skip_start = false;
 }
 
+
+try {
+    
+    if ( !empty($_REQUEST['sp']) && !empty($_REQUEST['date_start']) && !empty($_REQUEST['s']) && \Nyos\Nyos::checkSecret($_REQUEST['s'], $_REQUEST['sp'] . $_REQUEST['date_start']) !== false ) {
+        
+    } else {
+        \f\end2('хьюстон что то пошло не так (обновите страницу и повторите) #' . __LINE__, false);
+    }
+    
+    ob_start('ob_gzhandler');
+    
+    \Nyos\mod\JOBDESC_DAYOCENKA::deleteOcenki($db, $_REQUEST['sp'] , $_REQUEST['date_start'] );
+
+    $r = ob_get_contents();
+    ob_end_clean();
+
+    \f\end2('ok' . $r, false);
+    
+} catch (\Exception $ex) {
+
+    ob_start('ob_gzhandler');
+
+    \f\pa($ex);
+
+    $r = ob_get_contents();
+    ob_end_clean();
+
+
+    \f\end2('ok' . $r, false);
+    
+}
+
+
+
+
+\f\end2('что то не то', false);
+
 // \f\pa($_REQUEST);
+
 
 try {
 
@@ -62,7 +100,6 @@ try {
         // echo __FILE__.' #'.__LINE__;
 
         \f\end2('нет данных для оценки', false);
-        
     } else {
 
 
@@ -81,7 +118,7 @@ try {
 // считаем сколько часов отработано
         $hours = \Nyos\mod\JOBDESC_DAYOCENKA::calcHoursDaysForOcenka($db, $return['date'], $return['sp'], array_keys($jobmans['data']['jobmans']), $actions['data']['actions']);
         // $hours = [];
-        // \f\pa($hours, 2, '', 'колво hours');
+        //\f\pa($hours, 2, '', 'колво hours');
 // proc_zp_ot_oborota_if5
 // часы что в фот
         $return['hour_day'] = $return['hours'] = $hours['hours'];

@@ -2,7 +2,7 @@
     "name": "didrive_mod/jobdesc_dayocenka",
     "description": "jobdesc автооценка",
 
-    "version": "0.0.1",
+    "version": "1.7.2",
 
     "keywords": [
         "didrive", "module", "nyos", "uralweb.info"
@@ -19,12 +19,13 @@
 
     "homepage": "https://uralweb.info/php/#classes",
     "license": "MIT",
+    
     "require": {
         "php": ">=7.1.0"
         ,
         "didrive_mod/jobdesc": ">=0.0.1"
-    }
-    ,
+    },
+
     "autoload": {
         "files": [  "src/class.php" ]
     }
