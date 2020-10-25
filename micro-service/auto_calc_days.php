@@ -28,14 +28,13 @@ try {
     // \f\pa($ar_date_sp, 2, '', '$ar_date_sp');
 
     $nn = 0;
-
     $runned = [];
     
     \f\timer_start(12);
 
     foreach ($ar_date_sp as $date => $v) {
 
-        echo '<br/>' . $date;
+        // echo '<br/>' . $date;
 
         foreach ($v as $sp => $index) {
 
