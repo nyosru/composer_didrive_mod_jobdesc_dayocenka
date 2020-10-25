@@ -117,15 +117,16 @@ class JOBDESC_DAYOCENKA {
                     if (self::$show === true)
                         echo '<br/>' . $v['id'];
 
+                    if (!empty($now_calc)) {
                     $r = self::calcDaySumma($v, $v['hour_on_job'], $sp);
 
                     if (2 == 1 or self::$show === true)
                         echo '<br/>rr1 ' . $v['id'] . ' ' . $r;
 
-                    if (!empty($now_calc)) {
                         $return['summa_if5'] += $r;
-                        $return['calc_checks'][] = $v['id'];
                     }
+
+                    $return['calc_checks'][] = $v['id'];
 
                     if (self::$show === true) {
                         \f\pa($return['summa_if5'], 2, '', 'summa_if5');
@@ -299,7 +300,7 @@ class JOBDESC_DAYOCENKA {
 
                 foreach ($sps as $sp => $v) {
 
-                    if ( isset($return_sp_date[$sp][$ndate]) && $return_sp_date[$sp][$ndate] == 111 ) {
+                    if (isset($return_sp_date[$sp][$ndate]) && $return_sp_date[$sp][$ndate] == 111) {
 
                         $return_date_sp[$ndate][$sp] = 1;
                     }
