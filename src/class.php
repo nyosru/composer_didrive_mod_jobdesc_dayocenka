@@ -44,14 +44,25 @@ class JOBDESC_DAYOCENKA {
             'spec_position_auto' => 'считаем в ФОТ если спец. назначение',
         ];
 
+        $no_repeat_check = [];
+        
         foreach ($actions as $k => $v) {
 
+            
+            if( isset($no_repeat_check[$v['id']]) )
+                continue;
+            
+            $no_repeat_check[$v['id']] = 1;
+            
+            
+            
             if (!empty($v['type']) && $v['type'] == 'check') {
 
                 $now_calc = $now_sp = $now_d = null;
 
                 if (!empty($v['sale_point'])) {
                     if ($v['sale_point'] == $sp) {
+                        
                         $now_sp = $sp;
 
                         if ($v['spec_sp'] == $now_sp) {
@@ -61,7 +72,7 @@ class JOBDESC_DAYOCENKA {
 
                             $now_calc = $v['spec_position_auto'];
                         } elseif ($v['position_sp'] == $now_sp) {
-
+                            
                             if (!empty($v['position_d']))
                                 $now_d = $v['position_d'];
 
@@ -81,6 +92,9 @@ class JOBDESC_DAYOCENKA {
                     }
                 } elseif (!empty($v['position_sp'])) {
 
+                        if ( !empty($v['position_date_finish']) && $v['position_date_finish'] <= $date )
+                            continue;
+                    
                     if ($v['position_sp'] == $sp) {
                         $now_sp = $sp;
 
@@ -127,6 +141,14 @@ class JOBDESC_DAYOCENKA {
                     }
 
                     $return['calc_checks'][] = $v['id'];
+                    
+                    if( isset( $_SESSION['now_user_di']['access'] ) && $_SESSION['now_user_di']['access'] == 'admin' )
+                    $return['calc_checks_info'][] = [ 
+                        'check_id' => $v['id'],
+                        'calc' => ( !empty($now_calc) ? 'da' : 'no' ),
+                        'hours' => $v['hour_on_job'] ,
+                        'ii' => $v
+                            ];
 
                     if (self::$show === true) {
                         \f\pa($return['summa_if5'], 2, '', 'summa_if5');

@@ -90,6 +90,12 @@ try {
 
         $return['checks'] = $hours['calc_checks'];
 
+        // \f\pa($_SESSION);
+        
+        // инфа для админа        
+        if( isset( $_SESSION['now_user_di']['access'] ) && $_SESSION['now_user_di']['access'] == 'admin' )
+        $return['checks_info'] = $hours['calc_checks_info'];
+
         foreach ($actions['data']['actions'] as $k => $v) {
 
             if (isset($v['date']) && $v['date'] == $return['date']) {
@@ -207,10 +213,8 @@ catch (\Exception $ex) {
     ob_start('ob_gzhandler');
 
     \f\pa($ex);
-
     $r = ob_get_contents();
     ob_end_clean();
-
 
     \f\end2('ok' . $r, false);
 }
