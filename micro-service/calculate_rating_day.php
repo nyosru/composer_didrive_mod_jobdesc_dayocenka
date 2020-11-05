@@ -62,9 +62,8 @@ try {
         // echo __FILE__.' #'.__LINE__;
 
         \f\end2('нет данных для оценки', false);
-        
-    } else {
 
+    } else {
 
         ob_start('ob_gzhandler');
 
@@ -144,7 +143,8 @@ try {
                 . ' (норматив ' . $return['norms']['vuruchka_on_1_hand'] . ') '
                 . '<div style="background-color: rgba(' . ( $return['ocenka_naruki'] == 5 ? '0,255,0' : '255,255,0' ) . ',0.3);" >оценка: ' . $return['ocenka_naruki'] . '</div>';
 
-        if ($return['timeo']['cold'] <= $return['norms']['time_wait_norm_cold'] && $return['timeo']['delivery'] <= $return['norms']['time_wait_norm_delivery']) {
+        // if ($return['timeo']['cold'] <= $return['norms']['time_wait_norm_cold'] && $return['timeo']['delivery'] <= $return['norms']['time_wait_norm_delivery']) {
+        if ( $return['timeo']['cold'] <= $return['norms']['time_wait_norm_cold'] ) {
             $return['ocenka_time'] = 5;
         } else {
             $return['ocenka'] = $return['ocenka_time'] = 3;
@@ -152,7 +152,7 @@ try {
 
         $return['txt'] .= '<Br/><b>сравниваем время ожидания</b>'
                 . '<Br/>'
-                . $return['timeo']['cold'] . '/' . $return['timeo']['delivery']
+                . $return['timeo']['cold'] . '/' . $return['timeo']['delivery'] .' (доставку не учитываем) '
                 . ' <nobr>(норматив ' . $return['norms']['time_wait_norm_cold'] . '/' . $return['norms']['time_wait_norm_delivery'] . ')</nobr> '
                 . '<div style="background-color: rgba(' . ( $return['ocenka_time'] == 5 ? '0,255,0' : '255,255,0' ) . ',0.3);" >оценка: ' . $return['ocenka_time'] . '</div>';
 
@@ -188,13 +188,12 @@ try {
 // \f\pa($e);
 
 
-
-
         $sql = 'UPDATE `mod_050_chekin_checkout` SET `ocenka_auto` = :ocenka WHERE `id` = \'' . implode('\' OR `id` = \'', $return['checks']) . '\' ;';
 //\f\pa($sql);
         $ff = $db->prepare($sql);
         $ff->execute([':ocenka' => $return['ocenka']]);
 // echo implode( ', ' , $return['checks'] );
+
     }
 
     $r = ob_get_contents();
@@ -216,5 +215,5 @@ catch (\Exception $ex) {
     $r = ob_get_contents();
     ob_end_clean();
 
-    \f\end2('ok' . $r, false);
+    \f\end2('ошибка' . $r, false);
 }
