@@ -62,7 +62,6 @@ try {
         // echo __FILE__.' #'.__LINE__;
 
         \f\end2('нет данных для оценки', false);
-
     } else {
 
         ob_start('ob_gzhandler');
@@ -90,10 +89,9 @@ try {
         $return['checks'] = $hours['calc_checks'];
 
         // \f\pa($_SESSION);
-        
         // инфа для админа        
-        if( isset( $_SESSION['now_user_di']['access'] ) && $_SESSION['now_user_di']['access'] == 'admin' )
-        $return['checks_info'] = $hours['calc_checks_info'];
+        if (isset($_SESSION['now_user_di']['access']) && $_SESSION['now_user_di']['access'] == 'admin')
+            $return['checks_info'] = $hours['calc_checks_info'];
 
         foreach ($actions['data']['actions'] as $k => $v) {
 
@@ -105,18 +103,25 @@ try {
                     $return['norms'] = [
                         'time_wait_norm_cold' => $v['time_wait_norm_cold'] ?? '',
                         // 'time_wait_norm_hot' => $v['time_wait_norm_hot'] ?? '' ,
-                        'time_wait_norm_delivery' => $v['time_wait_norm_delivery'] ?? '',
+                        // 'time_wait_norm_delivery' => $v['time_wait_norm_delivery'] ?? '',
+                        'time_wait_norm_delivery_a' => $v['time_wait_norm_delivery_a'] ?? '',
+                        'time_wait_norm_delivery_b' => $v['time_wait_norm_delivery_b'] ?? '',
                         'procent_oplata_truda_on_oborota' => $v['procent_oplata_truda_on_oborota'] ?? '',
                         'kolvo_hour_in1smena' => $v['kolvo_hour_in1smena'] ?? '',
                         'vuruchka_on_1_hand' => $v['vuruchka_on_1_hand'] ?? ''
                     ];
                 } elseif (isset($v['type']) && $v['type'] == 'timeo') {
+
                     $return['timeo'] = [
                         'cold' => $v['cold'] ?? '',
                         'delivery' => $v['delivery'] ?? '',
+                        'delivery_a' => $v['delivery_a'] ?? '',
+                        'delivery_b' => $v['delivery_b'] ?? '',
                     ];
                     $return['cold'] = $v['cold'] ?? '';
                     $return['delivery'] = $v['delivery'] ?? '';
+                    $return['delivery_a'] = $v['delivery_a'] ?? '';
+                    $return['delivery_b'] = $v['delivery_b'] ?? '';
                 }
             }
         }
@@ -137,42 +142,57 @@ try {
             $return['ocenka_naruki_ot_oborota'] = $return['ocenka'] = $return['ocenka_naruki'] = 3;
         }
 
-        $return['txt'] .= '<Br/><b>сумма на зп, если оценка 5</b>'
-                . '<Br/>посчитали сколько отработано смен <nobr>' . $return['hours'] . '/' . $return['norms']['kolvo_hour_in1smena'] . ' = ' . $return['smen_in_day'] . '</nobr>'
-                . '<Br/>часть оборота на 1 руки ' . $return['summa_na_ruki']
-                . ' (норматив ' . $return['norms']['vuruchka_on_1_hand'] . ') '
-                . '<div style="background-color: rgba(' . ( $return['ocenka_naruki'] == 5 ? '0,255,0' : '255,255,0' ) . ',0.3);" >оценка: ' . $return['ocenka_naruki'] . '</div>';
+        if (1 == 1) {
 
-        // if ($return['timeo']['cold'] <= $return['norms']['time_wait_norm_cold'] && $return['timeo']['delivery'] <= $return['norms']['time_wait_norm_delivery']) {
-        if ( $return['timeo']['cold'] <= $return['norms']['time_wait_norm_cold'] ) {
-            $return['ocenka_time'] = 5;
-        } else {
-            $return['ocenka'] = $return['ocenka_time'] = 3;
+            $return['txt'] .= '<Br/><b>сумма на зп, если оценка 5</b>'
+                    . '<Br/>посчитали сколько отработано смен <nobr>' . $return['hours'] . '/' . $return['norms']['kolvo_hour_in1smena'] . ' = ' . $return['smen_in_day'] . '</nobr>'
+                    . '<Br/>часть оборота на 1 руки ' . $return['summa_na_ruki']
+                    . ' (норматив ' . $return['norms']['vuruchka_on_1_hand'] . ') '
+                    . '<div style="background-color: rgba(' . ( $return['ocenka_naruki'] == 5 ? '0,255,0' : '255,255,0' ) . ',0.3);" >оценка: ' . $return['ocenka_naruki'] . '</div>';
+
+            // if ($return['timeo']['cold'] <= $return['norms']['time_wait_norm_cold'] && $return['timeo']['delivery'] <= $return['norms']['time_wait_norm_delivery']) {
+            if (
+                    $return['timeo']['cold'] <= $return['norms']['time_wait_norm_cold'] && $return['timeo']['delivery_a'] <= $return['norms']['time_wait_norm_delivery_a'] && $return['timeo']['delivery_b'] <= $return['norms']['time_wait_norm_delivery_b']
+            ) {
+                $return['ocenka_time'] = 5;
+            } else {
+                $return['ocenka'] = $return['ocenka_time'] = 3;
+            }
+
+            $return['cold'] = $return['timeo']['cold'];
+            $return['delivery_a'] = $return['timeo']['delivery_a'];
+            $return['delivery_b'] = $return['timeo']['delivery_b'];
         }
 
-        $return['txt'] .= '<Br/><b>сравниваем время ожидания</b>'
-                . '<Br/>'
-                . $return['timeo']['cold'] . '/' . $return['timeo']['delivery'] .' (доставку не учитываем) '
-                . ' <nobr>(норматив ' . $return['norms']['time_wait_norm_cold'] . '/' . $return['norms']['time_wait_norm_delivery'] . ')</nobr> '
-                . '<div style="background-color: rgba(' . ( $return['ocenka_time'] == 5 ? '0,255,0' : '255,255,0' ) . ',0.3);" >оценка: ' . $return['ocenka_time'] . '</div>';
+        //время ожидания
+        if (1 == 1) {
 
-        // $return['procent_oplata_truda_on_oborota'] = $return['proc_zp_ot_oborota_if5'] = $return['if5_proc_oborot'] = round($hours['summa_if5'] / ($return['oborot'] / 100), 1);
-        $return['proc_zp_ot_oborota_if5'] = round($hours['summa_if5'] / ($return['oborot'] / 100), 1);
+            $return['txt'] .= '<Br/><b>сравниваем время ожидания</b>'
+                    . '<Br/>'
+                    . $return['timeo']['cold'] . '/' . $return['timeo']['delivery_a'] . '/' . $return['timeo']['delivery_b'] // . ' (доставку не учитываем) '
+                    . ' <nobr>(норматив ' . $return['norms']['time_wait_norm_cold'] . '/' . $return['norms']['time_wait_norm_delivery_a'] . '/' . $return['norms']['time_wait_norm_delivery_b'] . ')</nobr> '
+                    . '<div style="background-color: rgba(' . ( $return['ocenka_time'] == 5 ? '0,255,0' : '255,255,0' ) . ',0.3);" >оценка: ' . $return['ocenka_time'] . '</div>';
 
-        if ($return['proc_zp_ot_oborota_if5'] < $return['norms']['procent_oplata_truda_on_oborota']) {
-            $return['ocenka_proc_ot_oborot'] = 5;
-        } else {
-            $return['ocenka'] = $return['ocenka_proc_ot_oborot'] = 3;
+            // $return['procent_oplata_truda_on_oborota'] = $return['proc_zp_ot_oborota_if5'] = $return['if5_proc_oborot'] = round($hours['summa_if5'] / ($return['oborot'] / 100), 1);
+            $return['proc_zp_ot_oborota_if5'] = round($hours['summa_if5'] / ($return['oborot'] / 100), 1);
+
+            if ($return['proc_zp_ot_oborota_if5'] < $return['norms']['procent_oplata_truda_on_oborota']) {
+                $return['ocenka_proc_ot_oborot'] = 5;
+            } else {
+                $return['ocenka'] = $return['ocenka_proc_ot_oborot'] = 3;
+            }
         }
 
-        $return['txt'] .= '<Br/><b>сравниваем % от оборота на ЗП</b>'
-                . '<Br/>текущее значение ' . $return['proc_zp_ot_oborota_if5']
-                . ' <nobr>(на зп ' . $hours['summa_if5'] . ' из ТО ' . $return['oborot'] . ')</nobr> '
-                . '<Br/><nobr>норматив ' . $return['norms']['procent_oplata_truda_on_oborota'] . '</nobr> '
-                . '<div style="background-color: rgba(' . ( $return['ocenka_proc_ot_oborot'] == 5 ? '0,255,0' : '255,255,0' ) . ',0.3);" >оценка: ' . $return['ocenka_proc_ot_oborot'] . '</div>'
-        ;
-
+        if (1 == 1) {
+            $return['txt'] .= '<Br/><b>сравниваем % от оборота на ЗП</b>'
+                    . '<Br/>текущее значение ' . $return['proc_zp_ot_oborota_if5']
+                    . ' <nobr>(на зп ' . $hours['summa_if5'] . ' из ТО ' . $return['oborot'] . ')</nobr> '
+                    . '<Br/><nobr>норматив ' . $return['norms']['procent_oplata_truda_on_oborota'] . '</nobr> '
+                    . '<div style="background-color: rgba(' . ( $return['ocenka_proc_ot_oborot'] == 5 ? '0,255,0' : '255,255,0' ) . ',0.3);" >оценка: ' . $return['ocenka_proc_ot_oborot'] . '</div>'
+            ;
+        }
         $txt_ocenka = '<div style="background-color: rgba(' . ( $return['ocenka'] == 5 ? '0,255,0' : '255,255,0' ) . ',0.8); padding:2px 5px; text-align:center;"><nobr><b>Новая итоговая оценка: ' . $return['ocenka'] . '</b></nobr></div>';
+
         $return['txt'] .= '<br/><br/><font style="color:gray;" >обновите страницу для обновиления оценки смен в графике</font>';
 
 // \f\pa($return);
@@ -193,7 +213,6 @@ try {
         $ff = $db->prepare($sql);
         $ff->execute([':ocenka' => $return['ocenka']]);
 // echo implode( ', ' , $return['checks'] );
-
     }
 
     $r = ob_get_contents();
