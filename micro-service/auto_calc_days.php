@@ -117,15 +117,16 @@ try {
 }
 
 // \f\pa($m);
-
-\nyos\Msg::sendTelegramm('считаем автооценки которых нет: обработано ' . $nn
-        . (!empty($m) ? ' ( ' . round($m['sec'], 2) . ' сек ' . round($m['memory'], 2) . ' Кб )' : '' ), null, 2);
+if ($nn > 0) {
+    \nyos\Msg::sendTelegramm('считаем автооценки которых нет: обработано ' . $nn
+            . (!empty($m) ? ' ( ' . round($m['sec'], 2) . ' сек ' . round($m['memory'], 2) . ' Кб )' : '' ), null, 2);
+}
 
 // die();
 \f\end2(
         'считаем автооценки которых нет: обработано ' . $nn
         . (!empty($m) ? ' ( ' . round($m['sec'], 2) . ' сек ' . round($m['memory'], 2) . ' Кб )' : '' )
-        , true, [ 'timer' => ( $m ?? [] ), 'runned' => $runned ]
+        , true, ['timer' => ( $m ?? [] ), 'runned' => $runned]
 );
 
 
